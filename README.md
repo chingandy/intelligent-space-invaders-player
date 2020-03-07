@@ -3,7 +3,7 @@ Intelligent Space Invader Player
 In this project, a reinforcement learning agent was trained to solve a classic
 video game 'Space Invaders'. The reinforcement learning used in this project is Deep Q Network.
 
-(https://github.com/chingandy/intelligent-space-invaders-player/blob/master/images/screenshot.png)
+![screen shot](https://github.com/chingandy/intelligent-space-invaders-player/blob/master/images/screenshot.png)
 
 ## Getting started
 In order to play the variant of a classic video game Space Invaders, you will need to install the dependencies first. Run the following command in your terminal:
