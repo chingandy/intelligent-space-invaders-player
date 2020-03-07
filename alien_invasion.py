@@ -38,19 +38,31 @@ def run_game():
     aliens = Group()
 
     gf.create_fleet(settings, screen, ship, aliens)
+    # TODO: create a function which output the state by pickle
+    # print("Aliens: ", aliens.sprites())
+    # alien_list = aliens.sprites()
+    # print(alien_list[0].rect)
+    # print(alien_list[1].rect)
+    # # quit()
+    # print("Ship: ", ship)
+    # print(ship[:2])
+    # print(type(ship.rect.x))
+    # quit()
 
     # Create an instance to store game statistics and create a scoreboard.
     stats = GameStats(settings)
     sb = Scoreboard(settings, screen, stats)
 
     #Start the main loop for the game
-    count = 0
+    # count = 0
     while True:
         gf.check_events(settings, screen, stats, sb, ship, aliens, bullets, play_button)
         if stats.game_active:
             ship.update()
-            gf.update_bullets(settings, screen, stats, sb, ship, aliens, bullets)
-            gf.update_aliens(settings, stats, sb, screen, ship, aliens, bullets) # update the aliens' positions after the bullets have been updated (checking to see whether any bullets hit any aliens.)
+            reward = gf.update_bullets(settings, screen, stats, sb, ship, aliens, bullets)
+            done = gf.update_aliens(settings, stats, sb, screen, ship, aliens, bullets) # update the aliens' positions after the bullets have been updated (checking to see whether any bullets hit any aliens.)
+            gf.get_state(aliens, bullets, ship, reward, done)
+
         gf.update_screen(settings, screen, stats, sb, ship, aliens, bullets, play_button)
 
 run_game()

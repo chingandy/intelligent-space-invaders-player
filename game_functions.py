@@ -4,6 +4,7 @@ import pygame
 from bullet import Bullet
 from alien import Alien
 from time import sleep
+import pickle
 
 def check_events(settings, screen, stats, sb, ship, aliens, bullets, play_button):
     """Respond to keypresses and mouse events."""
@@ -38,7 +39,7 @@ def check_keydown_events(event, settings, stats, sb, aliens, screen, ship, bulle
     elif event.key == pygame.K_SPACE:
         fire_bullet(settings, screen, ship, bullets)
 
-    elif event.key == pygame.K_r:  
+    elif event.key == pygame.K_r:
         reset_game(screen, stats, settings, sb, aliens, bullets, ship)
 
     elif event.key == pygame.K_q:
@@ -172,17 +173,22 @@ def update_bullets(settings, screen, stats, sb, ship, aliens, bullets):
         if bullet.rect.bottom <= 0:
             bullets.remove(bullet)
 
-    check_bullet_alien_collisions(settings, screen, stats, sb, ship, aliens, bullets)
+    reward = check_bullet_alien_collisions(settings, screen, stats, sb, ship, aliens, bullets)
+
+    return reward
 
 def check_bullet_alien_collisions(settings, screen, stats, sb, ship, aliens, bullets):
     """Respond to bullet-alien collisions."""
     # Remove any bullets and aliens that collide
     collisions = pygame.sprite.groupcollide(bullets, aliens, True, True) # return a dictionary
+    reward = 0   # set for DQN agent
     if collisions:
         for aliens in collisions.values():
             stats.score += settings.alien_points * len(aliens)
+            reward += settings.alien_points * len(aliens)
             sb.prep_score()
         check_high_score(stats, sb)
+
 
     if len(aliens) == 0:
         # Destroy existing bullets, speed up game, and create new fleet.
@@ -195,6 +201,8 @@ def check_bullet_alien_collisions(settings, screen, stats, sb, ship, aliens, bul
         sb.prep_level()
 
         create_fleet(settings, screen, ship, aliens)
+
+    return reward
 
 def check_fleet_edges(settings, aliens):
     """Respond appropriately if any aliens have reached an edge."""
@@ -250,16 +258,19 @@ def update_aliens(settings, stats, sb, screen, ship, aliens, bullets):
     Check if the fleet is at an edge, and then update the positions of all
     aliens in the fleet.
     """
+    done = False # check if the ship collides with the aliens
     check_fleet_edges(settings, aliens)
     aliens.update() # this will automatically call each alien's update() method
 
     # Look for alien-ship collisions.
     if pygame.sprite.spritecollideany(ship, aliens):
         ship_hit(settings, stats, sb, screen, ship, aliens, bullets)
+        done = True
 
     # Look for aliens hitting the bottom of the screen.
     check_aliens_bottom(settings, stats, sb, screen, ship, aliens, bullets)
 
+    return done
 
 def check_high_score(stats, sb):
     """Check to see if there is a new high score."""
@@ -269,28 +280,39 @@ def check_high_score(stats, sb):
 
 
 def reset_game(screen, stats, settings, sb, aliens, bullets, ship):
+    """Reset the game and start from the first level. This function is
+       used for the learning agent.
+    """
     stats.game_active = False
     sleep(1)
     start_game(settings, screen, stats, sb, ship, aliens, bullets)
-    # # Reset the game settings.
-    # settings.initialize_dynamic_settings()
-    # # Hide the mouse cursor.
-    # pygame.mouse.set_visible(False)
-    # # Reset the game statistics.
-    # stats.reset_stats()
-    # stats.game_active = True
-    #
-    # # Reset the scoreboard images. (make sure the scoring and level images are updated properly.)
-    # sb.prep_score()
-    # sb.prep_high_score()
-    # sb.prep_level()
-    # sb.prep_ships()
-    #
-    #
-    # # Empty the list of aliens and bullets.
-    # aliens.empty()
-    # bullets.empty()
-    #
-    # # Create a new fleet and center the ship.
-    # create_fleet(settings, screen, ship, aliens)
-    # ship.center_ship()
+
+
+def get_state(aliens, bullets, ship, reward, done):
+    max_number_of_aliens = 16
+    max_number_of_bullets = 3
+    state = []
+    # state_aliens = []
+    # state_bullets = []
+
+    for alien in aliens.sprites():
+        state.extend(alien.rect[:2])
+        # state_aliens.append(alien.rect[0])
+        # state_aliens.append(alien.rect[1])
+
+    state.extend([0] * 2 * (max_number_of_aliens - len(aliens.sprites())))
+
+    for bullet in bullets.sprites():
+        state.extend(bullet.rect[:2])
+        # state_bullets.append(bullet.rect[0])
+        # state_bullets.append(bullet.rect[1])
+
+    state.extend([0] * 2 * (max_number_of_bullets - len(bullets.sprites())))
+    # print(ship.rect[:2])
+    state.extend(ship.rect[:2])
+    state.append(reward)
+    state.append(done)
+
+    f = open('state.txt', 'wb')
+    pickle.dump(state, f)
+    f.close()

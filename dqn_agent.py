@@ -10,35 +10,30 @@ from keras.layers import Dense
 from keras.optimizers import Adam
 from keras.models import Sequential
 
-EPISODES = 1000 #Maximum number of episodes
+EPISODES = 200 #Maximum number of episodes
+START_EPSILON = 0.1
+END_EPSILON = 0.002
 
-#DQN Agent for the Cartpole
-#Q function approximation with NN, experience replay, and target network
+#
 class DQNAgent:
     #Constructor for the agent (invoked when DQN is first called in main)
     def __init__(self, state_size, action_size):
-        self.check_solve = False	#If True, stop if you satisfy solution condition
-        self.render = False       #If you want to see Cartpole learning, then change to True
-
-        #Get size of state and action
+        self.check_solve = False	#
         self.state_size = state_size
         self.action_size = action_size
 
-################################################################################
-################################################################################
-        #Set hyper parameters for the DQN. Do not adjust those labeled as Fixed.
         self.discount_factor = 0.95
         self.learning_rate = 0.005
-        self.epsilon = 0.02 #Fixed
+        self.epsilon = START_EPSILON
+        self.epsilon_step = 0.00001
+
         self.batch_size = 32 #Fixed
         self.memory_size = 1000
         self.train_start = 100 #Fixed
         self.target_update_frequency = 1
-################################################################################
-################################################################################
 
         #Number of test states for Q value plots
-        self.test_state_no = 10000
+        self.test_state_no = 100
 
         #Create memory buffer using deque
         self.memory = deque(maxlen=self.memory_size)
@@ -50,12 +45,7 @@ class DQNAgent:
         #Initialize target network
         self.update_target_model()
 
-    #Approximate Q function using Neural Network
-    #State is the input and the Q Values are the output.
-###############################################################################
-###############################################################################
-        #Edit the Neural Network model here
-        #Tip: Consult https://keras.io/getting-started/sequential-model-guide/
+
     def build_model(self):
         model = Sequential()
         model.add(Dense(16, input_dim=self.state_size, activation='relu',
@@ -67,30 +57,26 @@ class DQNAgent:
 
 
         return model
-###############################################################################
-###############################################################################
 
-    #After some time interval update the target model to be same with model
+
     def update_target_model(self):
         self.target_model.set_weights(self.model.get_weights())
 
-    #Get action from model using epsilon-greedy policy
+
     def get_action(self, state):
-###############################################################################
-###############################################################################
-        #Insert your e-greedy policy code here
-        #Tip 1: Use the random package to generate a random action.
-        #Tip 2: Use keras.model.predict() to compute Q-values from the state.
+
         if np.random.rand() <= self.epsilon:
             action =  random.randrange(self.action_size)
         else:
             q_value = self.model.predict(state)
             action =  np.argmax(q_value[0])
-        # action = random.randrange(self.action_size)
+
+        if self.epsilon > END_EPSILON:
+            self.epsilon -= self.epsilon_step
+        print(f"epsilon: {self.epsilon}")
+
         return action
-###############################################################################
-###############################################################################
-    #Save sample <s,a,r,s'> to the replay memory
+
     def append_sample(self, state, action, reward, next_state, done):
         self.memory.append((state, action, reward, next_state, done)) #Add sample to the end of the list
 
@@ -99,14 +85,14 @@ class DQNAgent:
         if len(self.memory) < self.train_start: #Do not train if not enough memory
             return
         batch_size = min(self.batch_size, len(self.memory)) #Train on at most as many samples as you have in memory
-        mini_batch = random.sample(self.memory, batch_size) #Uniformly sample the memory buffer
+        mini_batch = random.sample(self.memory, batch_size) # Uniformly sample the memory buffer
         #Preallocate network and target network input matrices.
         update_input = np.zeros((batch_size, self.state_size)) #batch_size by state_size two-dimensional array (not matrix!)
         update_target = np.zeros((batch_size, self.state_size)) #Same as above, but used for the target network
-        action, reward, done = [], [], [] #Empty arrays that will grow dynamically
+        action, reward, done = [], [], [] # Empty arrays that will grow dynamically
 
         for i in range(self.batch_size):
-            update_input[i] = mini_batch[i][0] #Allocate s(i) to the network input array from iteration i in the batch
+            update_input[i] = mini_batch[i][0] # Allocate s(i) to the network input array from iteration i in the batch
             action.append(mini_batch[i][1]) #Store a(i)
             reward.append(mini_batch[i][2]) #Store r(i)
             update_target[i] = mini_batch[i][3] #Allocate s'(i) for the target network array from iteration i in the batch
@@ -116,19 +102,13 @@ class DQNAgent:
         target_val = self.target_model.predict(update_target) #Generate the target values for training the outer loop target network
 
         #Q Learning: get maximum Q value at s' from target network
-###############################################################################
-###############################################################################
-        #Insert your Q-learning code here
-        #Tip 1: Observe that the Q-values are stored in the variable target
-        #Tip 2: What is the Q-value of the action taken at the last state of the episode?
+
         for i in range(self.batch_size): #For every batch
             if done[i]:
                 target[i][action[i]] = reward[i]
             else:
                 target[i][action[i]] = reward[i] + self.discount_factor * (
                     np.amax(target_val[i]))
-###############################################################################
-###############################################################################
 
         #Train the inner loop network
         self.model.fit(update_input, target, batch_size=self.batch_size,
@@ -148,30 +128,17 @@ class DQNAgent:
         pylab.ylabel("Score")
         pylab.savefig("scores.png")
 
+
 if __name__ == "__main__":
 
-    # env = gym.make('CartPole-v0')
     control = Control()
     control.make()
-    # control.make()
-    import time
-    for i in range(1000):
-        print(i)
-        if i % 11 < 5:
-            control.step(0)
-        elif i % 11 < 10:
-            control.step(1)
-        else:
-            control.step(2)
-        # time.sleep(1)
-    quit()
-
 
 
 
     #Get state and action sizes from the environment
-    state_size = env.observation_space.shape[0]
-    action_size = env.action_space.n
+    state_size = control.observation_space[0]
+    action_size = control.action_space[0]
 
     #Create agent, see the DQNAgent __init__ method for details
     agent = DQNAgent(state_size, action_size)
@@ -183,23 +150,29 @@ if __name__ == "__main__":
 
     done = True
     for i in range(agent.test_state_no):
+        print(f"Test: {i}")
         if done:
             done = False
-            state = env.reset()
+            state = control.reset()
+            print(f"State:{state}")
+
             state = np.reshape(state, [1, state_size])
             test_states[i] = state
         else:
             action = random.randrange(action_size)
-            next_state, reward, done, info = env.step(action)
+            next_state, reward, done, info = control.step(action)
             next_state = np.reshape(next_state, [1, state_size])
             test_states[i] = state
             state = next_state
 
+    print("End of Test states")
+
     scores, episodes = [], [] #Create dynamically growing score and episode counters
     for e in range(EPISODES):
+        print(f"Episode: {e}")
         done = False
         score = 0
-        state = env.reset() #Initialize/reset the environment
+        state = control.reset() #Initialize/reset the environment
         state = np.reshape(state, [1, state_size]) #Reshape state so that to a 1 by state_size two-dimensional array ie. [x_1,x_2] to [[x_1,x_2]]
         #Compute Q values for plotting
         tmp = agent.model.predict(test_states)
@@ -207,14 +180,12 @@ if __name__ == "__main__":
         max_q_mean[e] = np.mean(max_q[e][:])
 
         while not done:
-            if agent.render:
-                env.render() #Show cartpole animation
 
             #Get action for the current state and go one step in environment
             action = agent.get_action(state)
-            next_state, reward, done, info = env.step(action)
+            print(f"Action: {action}")
+            next_state, reward, done, info = control.step(action)
             next_state = np.reshape(next_state, [1, state_size]) #Reshape next_state similarly to state
-
             #Save sample <s, a, r, s'> to the replay memory
             agent.append_sample(state, action, reward, next_state, done)
             #Training step
@@ -233,8 +204,7 @@ if __name__ == "__main__":
                 print("episode:", e, "  score:", score," q_value:", max_q_mean[e],"  memory length:",
                       len(agent.memory))
 
-                # if the mean of scores of last 100 episodes is bigger than 195
-                # stop training
+                
                 if agent.check_solve:
                     if np.mean(scores[-min(100, len(scores)):]) >= 195:
                         print("solved after", e-100, "episodes")
