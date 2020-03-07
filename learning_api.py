@@ -3,7 +3,7 @@ import pickle
 
 class Control:
     def __init__(self):
-        self.observation_space = (32, ) # positions of the aliens, position of ship, position of bullets
+        self.observation_space = (40, ) # positions of the aliens, position of ship, position of bullets
         self.action_space = (3, ) # Only 3 actions: left, right, fire
         self.training_time = 100  # limit the time for each training session
         self.remaining_time = self.training_time

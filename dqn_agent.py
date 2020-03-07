@@ -154,7 +154,6 @@ if __name__ == "__main__":
         if done:
             done = False
             state = control.reset()
-            print(f"State:{state}")
 
             state = np.reshape(state, [1, state_size])
             test_states[i] = state
@@ -183,7 +182,6 @@ if __name__ == "__main__":
 
             #Get action for the current state and go one step in environment
             action = agent.get_action(state)
-            print(f"Action: {action}")
             next_state, reward, done, info = control.step(action)
             next_state = np.reshape(next_state, [1, state_size]) #Reshape next_state similarly to state
             #Save sample <s, a, r, s'> to the replay memory
@@ -204,7 +202,7 @@ if __name__ == "__main__":
                 print("episode:", e, "  score:", score," q_value:", max_q_mean[e],"  memory length:",
                       len(agent.memory))
 
-                
+
                 if agent.check_solve:
                     if np.mean(scores[-min(100, len(scores)):]) >= 195:
                         print("solved after", e-100, "episodes")

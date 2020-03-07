@@ -18,7 +18,7 @@ from pygame.sprite import Group
 def run_game():
     # Initialize game and create a screen object
     pygame.init()
-    pygame.display.set_caption('Alien Invasion')
+    pygame.display.set_caption('Space Invaders')
 
     settings = Settings()
 

@@ -3,9 +3,11 @@ Intelligent Space Invader Player
 In this project, a reinforcement learning agent was trained to solve a classic
 video game 'Space Invaders'. The reinforcement learning used in this project is Deep Q Network.
 
+(https://github.com/chingandy/intelligent-space-invaders-player/blob/master/images/screenshot.png)
 
 ## Getting started
 In order to play the variant of a classic video game Space Invaders, you will need to install the dependencies first. Run the following command in your terminal:
+
 `pip install -r requirements.txt`
 
 ### Dependencies
@@ -19,6 +21,19 @@ The reward function is designed as the score gained during the game. When the bu
 * `left arrow` - move left
 * `right arrow` - move right   
 * `space key`  - fire a bullet (limit: 3 bullets at the same time)
+
+
+## How to play
+After the dependencies are installed, you can first try out the game by running the
+file `space_invaders.py`.
+
+`python space_invaders.py`
+
+## How to train the agent  
+You can see how the agent is being trained by running the file `main.py`.
+
+`python main.py`
+
 
 
 ## Result  

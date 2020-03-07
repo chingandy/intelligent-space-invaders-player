@@ -19,7 +19,6 @@ class Scoreboard:
 
         # Prepare the initial score image.
         self.prep_score()
-        print(f"score top: {self.score_rect.top}")
         self.prep_high_score()
         self.prep_level()
         self.prep_ships()
