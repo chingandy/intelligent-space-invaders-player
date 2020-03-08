@@ -38,16 +38,7 @@ def run_game():
     aliens = Group()
 
     gf.create_fleet(settings, screen, ship, aliens)
-    # TODO: create a function which output the state by pickle
-    # print("Aliens: ", aliens.sprites())
-    # alien_list = aliens.sprites()
-    # print(alien_list[0].rect)
-    # print(alien_list[1].rect)
-    # # quit()
-    # print("Ship: ", ship)
-    # print(ship[:2])
-    # print(type(ship.rect.x))
-    # quit()
+    
 
     # Create an instance to store game statistics and create a scoreboard.
     stats = GameStats(settings)

@@ -15,10 +15,6 @@ class Ship(Sprite):
 
         # Load the ship image and get its rect.
         self.image = pygame.image.load('images/ship.png') # return a surface representing the ship
-        # self.image = pygame.transform.scale(self.image,
-        #          (int(self.image.get_width() * 0.2),
-        #           int(self.image.get_height() * 0.2) ))
-        # self.image = pygame.image.load('images/ship.bmp')
         self.rect = self.image.get_rect()
         self.screen_rect = screen.get_rect()
 
@@ -38,10 +34,6 @@ class Ship(Sprite):
             self.rect.centerx += self.settings.ship_speed_factor * 1.5  # add 1.5 muliplier to balance the speeds of moving left and right (don't know why)
         elif self.moving_left and self.rect.left > 0:
             self.rect.centerx -= self.settings.ship_speed_factor
-        # if self.moving_right:
-        #     self.rect.centerx += 1
-        # if self.moving_left:
-        #     self.rect.centerx -= 1
 
 
     def blitme(self):

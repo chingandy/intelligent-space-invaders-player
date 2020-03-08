@@ -137,9 +137,7 @@ def update_screen(settings, screen, stats, sb, ship, aliens, bullets, play_butto
     """Update images on the screen and flip to the new screen."""
     # Redraw the screen during each pass through the loop
 
-    # bg_image = pygame.image.load('/Users/chingandywu/chinganwu/Python/alien_invasion/images/background.jpg')
     screen.fill(settings.bg_color)
-    # screen.blit(bg_image, bg_image.get_rect())
 
     ship.blitme()
     aliens.draw(screen)
@@ -292,23 +290,16 @@ def get_state(aliens, bullets, ship, reward, done):
     max_number_of_aliens = 16
     max_number_of_bullets = 3
     state = []
-    # state_aliens = []
-    # state_bullets = []
 
     for alien in aliens.sprites():
         state.extend(alien.rect[:2])
-        # state_aliens.append(alien.rect[0])
-        # state_aliens.append(alien.rect[1])
 
     state.extend([0] * 2 * (max_number_of_aliens - len(aliens.sprites())))
 
     for bullet in bullets.sprites():
         state.extend(bullet.rect[:2])
-        # state_bullets.append(bullet.rect[0])
-        # state_bullets.append(bullet.rect[1])
 
     state.extend([0] * 2 * (max_number_of_bullets - len(bullets.sprites())))
-    # print(ship.rect[:2])
     state.extend(ship.rect[:2])
     state.append(reward)
     state.append(done)

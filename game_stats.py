@@ -17,9 +17,7 @@ class GameStats:
             high_score = r.read()
             self.high_score = int(high_score)
 
-        # with open(_score_path) as high_score_file:
-        #     self.high_score = int(high_score_file.read())
-
+        
     def reset_stats(self):
         """Initialize statistics that can change during the game."""
         self.ships_left = self.settings.ship_limit
